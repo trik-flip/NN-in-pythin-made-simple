@@ -6,7 +6,6 @@ class MLP:
     """A simple Multi layer network implementation"""
 
     def __init__(self, num_input=3, num_hidden=[3, 3], num_output=2) -> None:
-        """Create a MLP"""
         self.num_input = num_input
         self.num_hidden = num_hidden
         self.num_output = num_output
@@ -28,7 +27,6 @@ class MLP:
 
     def forward_propagate(self, activations):
         self.activations[0] = activations
-        """AKA Predict"""
         for i, w in enumerate(self.weigths):
             net_inputs = np.dot(activations, w)
             activations = self._sigmoid(net_inputs)
@@ -43,7 +41,6 @@ class MLP:
             current_activations = self.activations[i]
             current_activations_reshaped = current_activations.reshape(
                 current_activations.shape[0], -1)
-
             self.derivatives[i] = np.dot(
                 current_activations_reshaped, delta_reshaped)
             error = np.dot(delta, self.weigths[i].T)
@@ -71,11 +68,13 @@ class MLP:
                 self.back_propagate(error)
                 self.gradient_decent(learning_rate)
                 sum_error += self._mse(target, output)
-
             if verbose > 1:
                 print(f"Error {sum_error/len(inputs)} at epoche {i+1}")
         if verbose:
             print(f"Error {sum_error/len(inputs)} at epoche {epochs}")
+
+    def predict(self, input):
+        return self.forward_propagate(input)[0]
 
     def _mse(self, target, output):
         return np.average((target - output)**2)
@@ -91,17 +90,8 @@ class MLP:
 if __name__ == "__main__":
     inputs = np.array([[random()/2 for _ in range(2)] for _ in range(1000)])
     targets = np.array([[i[0] + i[1]] for i in inputs])
-    mlps = []
-    best = None
-    min_error = 1
-    for x in range(2, 8):
-        mlps.append((x, MLP(2, [x], 1)))
-    for i, mlp in mlps:
-        mlp.train(inputs, targets, 50, 0.1, verbose=0)
-        input = np.array([.1, .2])
-        result = mlp.forward_propagate(input)
-        error = (0.3 - result)**2
-        if error < min_error:
-            best = i
-            min_error = error
-    print(f"the best = {best}, with a error of {min_error}")
+    mlp = MLP(2, [3], 1)
+    mlp.train(inputs, targets, 50, 0.1, verbose=0)
+    input = np.array([.1, .2])
+    result = mlp.forward_propagate(input)
+    print(result)
